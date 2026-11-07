@@ -30,6 +30,15 @@ yarn-error.log*
 # vercel
 .vercel
 
+# capacitor & mobile
+/android/.gradle
+/android/app/build
+/android/build
+/android/local.properties
+/android/.idea
+/android/*.iml
+/android/app/*.iml
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
