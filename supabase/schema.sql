@@ -1,56 +1,65 @@
 -- ==============================================================================
--- ZERO-COST PRODUCTION SCHEMA FOR MEDICAL INTAKE & COORDINATOR DASHBOARD
+-- ZERO-COST MEDICAL INTAKE & COORDINATOR DATABASE SCHEMA
 -- Platform: Supabase (PostgreSQL 15+)
 -- Storage Bucket: patient-docs
 -- Tables: medical_cases, notification_log
--- Features: RLS Policies, Audit Logging, Automated Case Numbers, Indexes
 -- ==============================================================================
 
 -- 1. Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 2. Clean up old artifacts if re-running (safe migrations)
--- DROP TABLE IF EXISTS notification_log CASCADE;
--- DROP TABLE IF EXISTS medical_cases CASCADE;
-
--- 3. Sequence for human-readable case reference numbers (e.g., MC-1001, MC-1002)
-CREATE SEQUENCE IF NOT EXISTS medical_case_number_seq START WITH 1001;
+-- 2. Sequence for human-readable case IDs (MC-1001, MC-1002, etc.)
+CREATE SEQUENCE IF NOT EXISTS public.medical_case_number_seq START WITH 1001;
 
 -- ==============================================================================
 -- TABLE: medical_cases
--- Holds patient intake submissions and triage/coordination status
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.medical_cases (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    case_number TEXT UNIQUE NOT NULL DEFAULT ('MC-' || nextval('medical_case_number_seq'::regclass)::TEXT),
+    case_number TEXT UNIQUE NOT NULL DEFAULT ('MC-' || nextval('public.medical_case_number_seq'::regclass)::TEXT),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     
-    -- Patient Information
-    patient_name TEXT NOT NULL CHECK (char_length(trim(patient_name)) >= 2),
-    patient_email TEXT NOT NULL CHECK (patient_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    patient_name TEXT,
+    patient_email TEXT,
     patient_phone TEXT,
     date_of_birth DATE,
-    gender TEXT CHECK (gender IN ('male', 'female', 'non-binary', 'other', 'prefer-not-to-say')),
+    gender TEXT,
     
-    -- Clinical Details
-    chief_complaint TEXT NOT NULL CHECK (char_length(trim(chief_complaint)) >= 3),
+    chief_complaint TEXT,
     symptoms_description TEXT,
-    urgency_level TEXT NOT NULL DEFAULT 'routine' CHECK (urgency_level IN ('routine', 'urgent', 'critical', 'emergency')),
+    urgency_level TEXT NOT NULL DEFAULT 'routine',
     
-    -- Workflow & Triage
-    status TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN ('submitted', 'under_review', 'action_required', 'scheduled', 'resolved', 'closed')),
+    status TEXT NOT NULL DEFAULT 'submitted',
     assigned_coordinator TEXT,
     coordinator_notes TEXT,
     
-    -- Attached Documents Metadata (stores file name, storage path, size, mime type)
     documents JSONB NOT NULL DEFAULT '[]'::jsonb
 );
 
+-- Ensure all columns exist if table was previously created with minimal columns
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS case_number TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS patient_name TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS patient_email TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS patient_phone TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS date_of_birth DATE;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS gender TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS chief_complaint TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS symptoms_description TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS urgency_level TEXT DEFAULT 'routine';
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'submitted';
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS assigned_coordinator TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS coordinator_notes TEXT;
+ALTER TABLE public.medical_cases ADD COLUMN IF NOT EXISTS documents JSONB DEFAULT '[]'::jsonb;
+
+-- Default case number if missing
+ALTER TABLE public.medical_cases ALTER COLUMN case_number SET DEFAULT ('MC-' || nextval('public.medical_case_number_seq'::regclass)::TEXT);
+
 -- ==============================================================================
 -- TABLE: notification_log
--- Audit trail of all outgoing patient notifications (email, SMS, status alerts)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.notification_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,17 +67,17 @@ CREATE TABLE IF NOT EXISTS public.notification_log (
     case_id UUID REFERENCES public.medical_cases(id) ON DELETE CASCADE,
     
     recipient TEXT NOT NULL,
-    channel TEXT NOT NULL CHECK (channel IN ('email', 'sms', 'webhook', 'system')),
-    event_type TEXT NOT NULL CHECK (event_type IN ('case_submitted', 'status_changed', 'note_added', 'coordinator_assigned', 'document_uploaded')),
+    channel TEXT NOT NULL DEFAULT 'email',
+    event_type TEXT NOT NULL DEFAULT 'case_submitted',
     subject TEXT,
     message_body TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'sent' CHECK (status IN ('pending', 'sent', 'failed')),
+    status TEXT NOT NULL DEFAULT 'sent',
     error_message TEXT,
     metadata JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
 -- ==============================================================================
--- INDEXES FOR PERFORMANCE & SEARCH
+-- INDEXES FOR PERFORMANCE
 -- ==============================================================================
 CREATE INDEX IF NOT EXISTS idx_medical_cases_status ON public.medical_cases (status);
 CREATE INDEX IF NOT EXISTS idx_medical_cases_urgency ON public.medical_cases (urgency_level);
@@ -80,130 +89,81 @@ CREATE INDEX IF NOT EXISTS idx_notification_log_case_id ON public.notification_l
 CREATE INDEX IF NOT EXISTS idx_notification_log_created_at ON public.notification_log (created_at DESC);
 
 -- ==============================================================================
--- AUTOMATIC TIMESTAMPS (TRIGGER)
+-- GRANTS & PERMISSIONS (Crucial for PostgREST & Supabase API)
 -- ==============================================================================
-CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = timezone('utc'::text, now());
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS set_medical_cases_updated_at ON public.medical_cases;
-CREATE TRIGGER set_medical_cases_updated_at
-    BEFORE UPDATE ON public.medical_cases
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_updated_at();
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON TABLE public.medical_cases TO postgres, anon, authenticated, service_role;
+GRANT ALL ON TABLE public.notification_log TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
 
 -- ==============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
--- Strict HIPAA/privacy protection for medical data
 -- ==============================================================================
 ALTER TABLE public.medical_cases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notification_log ENABLE ROW LEVEL SECURITY;
 
--- 1. Medical Cases Policies:
--- Allow anonymous/public patients to SUBMIT their case via the public intake form
+-- Medical Cases Policies
+DROP POLICY IF EXISTS "Public anonymous users can submit intake cases" ON public.medical_cases;
 CREATE POLICY "Public anonymous users can submit intake cases"
     ON public.medical_cases
     FOR INSERT
     TO anon, authenticated
     WITH CHECK (true);
 
--- Authenticated coordinators have full read & write access
+DROP POLICY IF EXISTS "Coordinators have full access to medical cases" ON public.medical_cases;
 CREATE POLICY "Coordinators have full access to medical cases"
     ON public.medical_cases
     FOR ALL
-    TO authenticated
+    TO authenticated, service_role
     USING (true)
     WITH CHECK (true);
 
--- 2. Notification Log Policies:
--- Only authenticated coordinators / server role can inspect notification audits
+-- Notification Log Policies
+DROP POLICY IF EXISTS "Authenticated users can view notification logs" ON public.notification_log;
 CREATE POLICY "Authenticated users can view notification logs"
     ON public.notification_log
     FOR SELECT
-    TO authenticated
+    TO authenticated, service_role
     USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users or server can insert notification logs" ON public.notification_log;
 CREATE POLICY "Authenticated users or server can insert notification logs"
     ON public.notification_log
     FOR INSERT
-    TO authenticated
+    TO authenticated, service_role
     WITH CHECK (true);
 
 -- ==============================================================================
 -- STORAGE BUCKET: patient-docs
--- Secure storage for medical reports, lab results, insurance cards, and scans
 -- ==============================================================================
--- Insert bucket configuration (avoids duplicates if already created)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
     'patient-docs',
     'patient-docs',
-    false, -- Private bucket (preserves patient confidentiality; accessed via signed URLs or service_role)
-    20971520, -- 20MB max file size limit
+    false, -- Private bucket
+    20971520, -- 20MB limit
     ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/dicom']
 )
 ON CONFLICT (id) DO UPDATE SET
     public = false,
     file_size_limit = 20971520;
 
--- Storage RLS Policies:
--- Allow anyone (public/anon) to upload files into the patient-docs bucket
+-- Storage RLS Policies
+DROP POLICY IF EXISTS "Allow public intake file uploads" ON storage.objects;
 CREATE POLICY "Allow public intake file uploads"
     ON storage.objects
     FOR INSERT
-    TO anon, authenticated
+    TO anon, authenticated, service_role
     WITH CHECK (bucket_id = 'patient-docs');
 
--- Only authenticated coordinators can view/download uploaded documents
+DROP POLICY IF EXISTS "Allow coordinators to view patient documents" ON storage.objects;
 CREATE POLICY "Allow coordinators to view patient documents"
     ON storage.objects
     FOR SELECT
-    TO authenticated
-    USING (bucket_id = 'patient-docs');
-
--- Only authenticated coordinators can delete uploaded documents
-CREATE POLICY "Allow coordinators to delete patient documents"
-    ON storage.objects
-    FOR DELETE
-    TO authenticated
+    TO authenticated, service_role
     USING (bucket_id = 'patient-docs');
 
 -- ==============================================================================
--- HELPER NOTIFICATION TRIGGER (OPTIONAL AUDIT HOOK)
--- Logs a notification record automatically when a new case is submitted
+-- RELOAD SCHEMA CACHE
 -- ==============================================================================
-CREATE OR REPLACE FUNCTION public.handle_new_case_notification()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO public.notification_log (
-        case_id,
-        recipient,
-        channel,
-        event_type,
-        subject,
-        message_body,
-        status,
-        metadata
-    ) VALUES (
-        NEW.id,
-        NEW.patient_email,
-        'email',
-        'case_submitted',
-        'Your medical intake case has been received (' || NEW.case_number || ')',
-        'Hello ' || NEW.patient_name || ', your intake form has been submitted successfully with urgency level: ' || NEW.urgency_level || '. A care coordinator is reviewing your details.',
-        'sent',
-        jsonb_build_object('urgency', NEW.urgency_level, 'complaint', NEW.chief_complaint)
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP TRIGGER IF EXISTS on_case_created_notify ON public.medical_cases;
-CREATE TRIGGER on_case_created_notify
-    AFTER INSERT ON public.medical_cases
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_new_case_notification();
+NOTIFY pgrst, 'reload schema';
