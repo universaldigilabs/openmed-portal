@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { isSupabaseConfigured, mockCases, mockNotifications } from '@/lib/mock-store';
 
 export async function GET(
   _request: NextRequest,
@@ -8,30 +9,42 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const { data: medicalCase, error: caseError } = await supabaseAdmin
-      .from('medical_cases')
-      .select('*')
-      .eq('id', id)
-      .single();
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: medicalCase, error: caseError } = await supabaseAdmin
+          .from('medical_cases')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-    if (caseError) {
-      return NextResponse.json({ error: caseError.message }, { status: 404 });
+        if (!caseError && medicalCase) {
+          const { data: notifications } = await supabaseAdmin
+            .from('notification_log')
+            .select('*')
+            .eq('case_id', id)
+            .order('created_at', { ascending: false });
+
+          return NextResponse.json({
+            case: medicalCase,
+            notifications: notifications || [],
+            source: 'supabase',
+          });
+        }
+      } catch (e) {
+        console.warn('Falling back to local mock store for case details:', e);
+      }
     }
 
-    // Fetch associated notification audit trail
-    const { data: notifications, error: notifError } = await supabaseAdmin
-      .from('notification_log')
-      .select('*')
-      .eq('case_id', id)
-      .order('created_at', { ascending: false });
-
-    if (notifError) {
-      console.warn('Error fetching notifications:', notifError);
+    const found = mockCases.find((c) => c.id === id);
+    if (!found) {
+      return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
+    const notifs = mockNotifications.filter((n) => n.case_id === id);
     return NextResponse.json({
-      case: medicalCase,
-      notifications: notifications || [],
+      case: found,
+      notifications: notifs,
+      source: 'local-test-mode',
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
@@ -54,51 +67,83 @@ export async function PATCH(
       coordinator_notes,
     } = body;
 
-    // Fetch existing state first for audit diffing
-    const { data: existingCase, error: fetchErr } = await supabaseAdmin
-      .from('medical_cases')
-      .select('*')
-      .eq('id', id)
-      .single();
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: existingCase } = await supabaseAdmin
+          .from('medical_cases')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-    if (fetchErr || !existingCase) {
+        if (existingCase) {
+          const updates: Record<string, unknown> = {};
+          if (status !== undefined) updates.status = status;
+          if (urgency_level !== undefined) updates.urgency_level = urgency_level;
+          if (assigned_coordinator !== undefined) updates.assigned_coordinator = assigned_coordinator;
+          if (coordinator_notes !== undefined) updates.coordinator_notes = coordinator_notes;
+
+          const { data: updatedCase, error: updateErr } = await supabaseAdmin
+            .from('medical_cases')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+          if (!updateErr && updatedCase) {
+            if (status && status !== existingCase.status) {
+              await supabaseAdmin.from('notification_log').insert([
+                {
+                  case_id: id,
+                  recipient: existingCase.patient_email,
+                  channel: 'email',
+                  event_type: 'status_changed',
+                  subject: `Medical Case Update: Status changed to ${status}`,
+                  message_body: `Hello ${existingCase.patient_name}, the status of your case (${existingCase.case_number}) has been updated from '${existingCase.status}' to '${status}'.`,
+                  status: 'sent',
+                  metadata: { previous_status: existingCase.status, new_status: status },
+                },
+              ]);
+            }
+            return NextResponse.json({ success: true, case: updatedCase, source: 'supabase' });
+          }
+        }
+      } catch (e) {
+        console.warn('Falling back to local mock store for PATCH:', e);
+      }
+    }
+
+    // Local Test Fallback
+    const existingIndex = mockCases.findIndex((c) => c.id === id);
+    if (existingIndex === -1) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
-    const updates: Record<string, unknown> = {};
-    if (status !== undefined) updates.status = status;
-    if (urgency_level !== undefined) updates.urgency_level = urgency_level;
-    if (assigned_coordinator !== undefined) updates.assigned_coordinator = assigned_coordinator;
-    if (coordinator_notes !== undefined) updates.coordinator_notes = coordinator_notes;
+    const prev = mockCases[existingIndex];
+    const prevStatus = prev.status;
 
-    const { data: updatedCase, error: updateErr } = await supabaseAdmin
-      .from('medical_cases')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    if (status !== undefined) prev.status = status;
+    if (urgency_level !== undefined) prev.urgency_level = urgency_level;
+    if (assigned_coordinator !== undefined) prev.assigned_coordinator = assigned_coordinator;
+    if (coordinator_notes !== undefined) prev.coordinator_notes = coordinator_notes;
+    prev.updated_at = new Date().toISOString();
 
-    if (updateErr) {
-      return NextResponse.json({ error: updateErr.message }, { status: 500 });
+    if (status && status !== prevStatus) {
+      mockNotifications.unshift({
+        id: `notif-${Date.now()}`,
+        case_id: id,
+        created_at: new Date().toISOString(),
+        recipient: prev.patient_email,
+        channel: 'email',
+        event_type: 'status_changed',
+        subject: `Medical Case Update: Status changed to ${status}`,
+        message_body: `Hello ${prev.patient_name}, the status of your case (${prev.case_number}) has been updated from '${prevStatus}' to '${status}'.`,
+        status: 'sent',
+        error_message: null,
+        metadata: { previous_status: prevStatus, new_status: status },
+      });
     }
 
-    // Audit notification if status changed
-    if (status && status !== existingCase.status) {
-      await supabaseAdmin.from('notification_log').insert([
-        {
-          case_id: id,
-          recipient: existingCase.patient_email,
-          channel: 'email',
-          event_type: 'status_changed',
-          subject: `Medical Case Update: Status changed to ${status}`,
-          message_body: `Hello ${existingCase.patient_name}, the status of your case (${existingCase.case_number}) has been updated from '${existingCase.status}' to '${status}'.`,
-          status: 'sent',
-          metadata: { previous_status: existingCase.status, new_status: status },
-        },
-      ]);
-    }
-
-    return NextResponse.json({ success: true, case: updatedCase });
+    return NextResponse.json({ success: true, case: prev, source: 'local-test-mode' });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     return NextResponse.json({ error: message }, { status: 500 });
