@@ -1,4 +1,4 @@
-# OpenMed — Zero-Cost Clinical Intake & Care Coordination Portal
+# Med Vantage — Zero-Cost Clinical Intake & Care Coordination Portal
 
 An open-source, full-stack medical intake and clinical triage coordination portal built with **Next.js (App Router)**, **Tailwind CSS**, and **Supabase (PostgreSQL with Row Level Security & Storage)**. Designed to run completely on **free tiers** (Supabase Free + Vercel Hobby) at \$0 hosting and maintenance costs.
 

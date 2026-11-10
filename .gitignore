@@ -38,6 +38,7 @@ yarn-error.log*
 /android/.idea
 /android/*.iml
 /android/app/*.iml
+/apks/
 
 # typescript
 *.tsbuildinfo

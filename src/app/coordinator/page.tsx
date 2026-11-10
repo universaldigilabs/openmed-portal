@@ -23,11 +23,15 @@ import {
   Layers,
   ArrowLeft,
   AlertCircle,
+  Lock,
+  LogIn,
 } from 'lucide-react';
 import { MedicalCase, CaseStatus, UrgencyLevel, NotificationLog } from '@/types/database';
 import { formatDateTime, formatDateOnly } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CoordinatorDashboardPage() {
+  const { user, loading: authLoading, quickLogin } = useAuth();
   const [cases, setCases] = useState<MedicalCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +89,7 @@ export default function CoordinatorDashboardPage() {
     setSelectedCase(c);
     setEditStatus(c.status);
     setEditUrgency(c.urgency_level);
-    setEditCoordinator(c.assigned_coordinator || '');
+    setEditCoordinator(c.assigned_coordinator || user?.fullName || '');
     setEditNotes(c.coordinator_notes || '');
     setUpdateSuccessMsg(null);
     setLoadingDetails(true);
@@ -172,6 +176,38 @@ export default function CoordinatorDashboardPage() {
   const criticalCount = cases.filter((c) => c.urgency_level === 'critical' || c.urgency_level === 'emergency').length;
   const resolvedCount = cases.filter((c) => c.status === 'resolved' || c.status === 'closed').length;
 
+  // Authentication Gate
+  if (!authLoading && !user) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-center">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-5 shadow-sm">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Staff Authentication Required</h2>
+          <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto mb-8">
+            Access to the Med Vantage Care Coordinator Console is restricted to authorized medical staff. Please sign in to manage clinical intake cases.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/login?redirect=/coordinator"
+              className="py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition inline-flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Sign In to Staff Console</span>
+            </Link>
+            <button
+              onClick={() => quickLogin('coordinator')}
+              className="py-3 px-6 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition"
+            >
+              Demo Staff Access
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Top Banner */}
@@ -184,10 +220,10 @@ export default function CoordinatorDashboardPage() {
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
             <Stethoscope className="w-7 h-7 text-blue-600" />
-            Care Coordinator Triage Dashboard
+            Med Vantage • Coordinator Triage Dashboard
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Secure clinical review station bypassing Row Level Security via server credentials.
+            Clinical review station. Logged in as: <strong className="text-slate-800">{user?.fullName || user?.email || 'Care Coordinator'}</strong>.
           </p>
         </div>
 

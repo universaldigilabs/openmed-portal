@@ -17,8 +17,10 @@ import {
 } from 'lucide-react';
 import { supabaseClient } from '@/lib/supabase/client';
 import { UrgencyLevel, Gender, DocumentAttachment } from '@/types/database';
+import { useAuth } from '@/context/AuthContext';
 
 export default function PatientIntakePage() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     patient_name: '',
     patient_email: '',
@@ -29,6 +31,17 @@ export default function PatientIntakePage() {
     symptoms_description: '',
     urgency_level: 'routine' as UrgencyLevel,
   });
+
+  // Pre-fill patient details if logged in
+  React.useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        patient_name: prev.patient_name || user.fullName || '',
+        patient_email: prev.patient_email || user.email || '',
+      }));
+    }
+  }, [user]);
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
