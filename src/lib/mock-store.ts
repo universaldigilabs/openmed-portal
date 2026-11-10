@@ -1,4 +1,6 @@
 import { MedicalCase, NotificationLog } from '@/types/database';
+import { Hospital } from '@/types/medical-tourism';
+import { HOSPITALS } from '@/data/hospitals';
 
 export function isSupabaseConfigured(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -214,3 +216,6 @@ export function getNextCaseNumber(): string {
   const num = mockCaseCounter++;
   return `MC-${num}`;
 }
+
+export const mockHospitals: Hospital[] = [...HOSPITALS];
+

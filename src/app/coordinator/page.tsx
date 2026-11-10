@@ -36,6 +36,7 @@ import {
   BedDouble,
   CreditCard,
   Users,
+  UploadCloud,
 } from 'lucide-react';
 import { MedicalCase, CaseStatus, UrgencyLevel, NotificationLog } from '@/types/database';
 import { formatDateTime, formatDateOnly } from '@/lib/utils';
@@ -247,6 +248,14 @@ export default function CoordinatorDashboardPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <Link
+              href="/hospitals/upload"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
+              title="Upload & Sync Hospitals Database"
+            >
+              <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
+              <span>Upload Hospitals</span>
+            </Link>
             <button
               onClick={fetchCases}
               disabled={loading}

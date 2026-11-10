@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Sparkles,
+  UploadCloud,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -28,6 +29,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/hospitals', label: 'Hospitals & Clinics', icon: Building2 },
+    { href: '/hospitals/upload', label: 'Upload Hospitals', icon: UploadCloud },
     { href: '/cost-comparison', label: 'Cost Transparency', icon: TrendingDown },
     { href: '/second-opinion', label: 'Second Opinions', icon: Video },
     { href: '/travel-services', label: 'Travel & Visa', icon: Plane },
