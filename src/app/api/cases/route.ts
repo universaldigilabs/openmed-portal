@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { isSupabaseConfigured, mockCases, mockNotifications, getNextCaseNumber } from '@/lib/mock-store';
-import { MedicalCase } from '@/types/database';
+import { MedicalCase, TravelPreferences } from '@/types/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const urgency = searchParams.get('urgency');
     const country = searchParams.get('country');
     const specialty = searchParams.get('specialty');
+    const assistance = searchParams.get('assistance'); // 'hotel', 'visa', 'insurance'
     const search = searchParams.get('search');
 
     if (isSupabaseConfigured()) {
@@ -61,6 +62,16 @@ export async function GET(request: NextRequest) {
       filtered = filtered.filter((c) => c.procedure_specialty === specialty);
     }
 
+    if (assistance && assistance !== 'all') {
+      if (assistance === 'hotel') {
+        filtered = filtered.filter((c) => c.travel_preferences?.need_hotel_booking);
+      } else if (assistance === 'visa') {
+        filtered = filtered.filter((c) => c.travel_preferences?.need_visa_assistance);
+      } else if (assistance === 'insurance') {
+        filtered = filtered.filter((c) => c.travel_preferences?.need_insurance_assistance);
+      }
+    }
+
     if (search) {
       const q = search.toLowerCase();
       filtered = filtered.filter(
@@ -70,7 +81,8 @@ export async function GET(request: NextRequest) {
           c.case_number.toLowerCase().includes(q) ||
           c.chief_complaint.toLowerCase().includes(q) ||
           (c.destination_country && c.destination_country.toLowerCase().includes(q)) ||
-          (c.procedure_specialty && c.procedure_specialty.toLowerCase().includes(q))
+          (c.procedure_specialty && c.procedure_specialty.toLowerCase().includes(q)) ||
+          (c.travel_preferences?.insurance_provider && c.travel_preferences.insurance_provider.toLowerCase().includes(q))
       );
     }
 
@@ -99,9 +111,23 @@ export async function POST(request: NextRequest) {
       destination_country,
       target_timeline,
       patient_nationality,
-      need_visa_assistance,
-      need_airport_transfer,
+
+      // Accommodation assistance
       need_hotel_booking,
+      accommodation_type,
+      companion_count,
+
+      // Visa assistance
+      need_visa_assistance,
+      visa_attendants_count,
+
+      // Health Insurance assistance
+      need_insurance_assistance,
+      insurance_type,
+      insurance_provider,
+
+      // Other Concierge
+      need_airport_transfer,
       need_translator,
       need_second_opinion,
     } = body;
@@ -113,14 +139,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const travel_preferences = {
+    const travel_preferences: TravelPreferences = {
       destination_country: destination_country || 'Any Destination',
       procedure_specialty: procedure_specialty || 'General Inquiry',
       target_timeline: target_timeline || 'Flexible',
       patient_nationality: patient_nationality || 'Not specified',
-      need_visa_assistance: Boolean(need_visa_assistance),
-      need_airport_transfer: Boolean(need_airport_transfer),
+
+      // Hotel / Accommodation Assistance
       need_hotel_booking: Boolean(need_hotel_booking),
+      accommodation_type: accommodation_type || (need_hotel_booking ? 'serviced_apartment' : 'not_needed'),
+      companion_count: companion_count || '1',
+
+      // Visa Assistance
+      need_visa_assistance: Boolean(need_visa_assistance),
+      visa_attendants_count: visa_attendants_count || '1',
+
+      // Health Insurance Assistance
+      need_insurance_assistance: Boolean(need_insurance_assistance),
+      insurance_type: insurance_type || (need_insurance_assistance ? 'has_international_insurance' : 'not_needed'),
+      insurance_provider: insurance_provider || '',
+
+      // Other services
+      need_airport_transfer: Boolean(need_airport_transfer),
       need_translator: Boolean(need_translator),
       need_second_opinion: Boolean(need_second_opinion),
     };
@@ -201,7 +241,7 @@ export async function POST(request: NextRequest) {
       channel: 'email',
       event_type: 'case_submitted',
       subject: `Med Vantage: Medical Tourism Case Received (${newCase.case_number})`,
-      message_body: `Hello ${patient_name}, your inquiry for ${procedure_specialty || 'treatment'} in ${destination_country || 'abroad'} has been registered. An accredited hospital coordinator is reviewing your record.`,
+      message_body: `Hello ${patient_name}, your inquiry for ${procedure_specialty || 'treatment'} in ${destination_country || 'abroad'} has been registered. Our care coordinators are processing your quote and travel requests (Hotel: ${travel_preferences.need_hotel_booking ? 'Yes' : 'No'}, Visa: ${travel_preferences.need_visa_assistance ? 'Yes' : 'No'}, Insurance: ${travel_preferences.need_insurance_assistance ? 'Yes' : 'No'}).`,
       status: 'sent',
       error_message: null,
       metadata: { procedure: procedure_specialty, destination: destination_country },

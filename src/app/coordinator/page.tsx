@@ -33,6 +33,9 @@ import {
   Video,
   DollarSign,
   Globe2,
+  BedDouble,
+  CreditCard,
+  Users,
 } from 'lucide-react';
 import { MedicalCase, CaseStatus, UrgencyLevel, NotificationLog } from '@/types/database';
 import { formatDateTime, formatDateOnly } from '@/lib/utils';
@@ -50,6 +53,7 @@ export default function CoordinatorDashboardPage() {
   const [urgencyFilter, setUrgencyFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
   const [specialtyFilter, setSpecialtyFilter] = useState('all');
+  const [assistanceFilter, setAssistanceFilter] = useState('all');
 
   // Selected Case for Review Modal / Drawer
   const [selectedCase, setSelectedCase] = useState<MedicalCase | null>(null);
@@ -76,6 +80,7 @@ export default function CoordinatorDashboardPage() {
       if (urgencyFilter !== 'all') params.set('urgency', urgencyFilter);
       if (countryFilter !== 'all') params.set('country', countryFilter);
       if (specialtyFilter !== 'all') params.set('specialty', specialtyFilter);
+      if (assistanceFilter !== 'all') params.set('assistance', assistanceFilter);
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
 
       const res = await fetch(`/api/cases?${params.toString()}`);
@@ -92,7 +97,7 @@ export default function CoordinatorDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, urgencyFilter, countryFilter, specialtyFilter, searchTerm]);
+  }, [statusFilter, urgencyFilter, countryFilter, specialtyFilter, assistanceFilter, searchTerm]);
 
   useEffect(() => {
     fetchCases();
@@ -187,9 +192,9 @@ export default function CoordinatorDashboardPage() {
 
   // Metrics Counters
   const totalCount = cases.length;
-  const quotePreparedCount = cases.filter((c) => c.status === 'quote_prepared').length;
-  const visaProcessingCount = cases.filter((c) => c.status === 'visa_processing').length;
-  const scheduledCount = cases.filter((c) => c.status === 'scheduled').length;
+  const hotelCount = cases.filter((c) => c.travel_preferences?.need_hotel_booking).length;
+  const visaCount = cases.filter((c) => c.travel_preferences?.need_visa_assistance).length;
+  const insuranceCount = cases.filter((c) => c.travel_preferences?.need_insurance_assistance).length;
 
   // Authentication Gate
   if (!authLoading && !user) {
@@ -260,7 +265,7 @@ export default function CoordinatorDashboardPage() {
           </div>
         </div>
 
-        {/* Metrics Row */}
+        {/* Metrics Row (Total, Hotel, Visa, Insurance) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
@@ -268,50 +273,64 @@ export default function CoordinatorDashboardPage() {
               <Plane className="w-4 h-4 text-blue-600" />
             </div>
             <div className="text-2xl font-black text-slate-900">{totalCount}</div>
-            <div className="text-[11px] text-slate-400 mt-1">Global patient inquiries</div>
+            <div className="text-[11px] text-slate-400 mt-1">Active international patients</div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
-              <span>Quotes Prepared</span>
-              <DollarSign className="w-4 h-4 text-emerald-600" />
+              <span>Hotel / Lodging Needed</span>
+              <Building2 className="w-4 h-4 text-purple-600" />
             </div>
-            <div className="text-2xl font-black text-emerald-600">{quotePreparedCount}</div>
-            <div className="text-[11px] text-slate-400 mt-1">Awaiting patient travel decision</div>
+            <div className="text-2xl font-black text-purple-600">{hotelCount}</div>
+            <div className="text-[11px] text-slate-400 mt-1">Serviced apartments / hotels</div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
-              <span>Visa Processing</span>
-              <FileBadge className="w-4 h-4 text-amber-600" />
+              <span>Medical Visa Needed</span>
+              <FileBadge className="w-4 h-4 text-blue-600" />
             </div>
-            <div className="text-2xl font-black text-amber-600">{visaProcessingCount}</div>
-            <div className="text-[11px] text-slate-400 mt-1">Hospital letter issued</div>
+            <div className="text-2xl font-black text-blue-600">{visaCount}</div>
+            <div className="text-[11px] text-slate-400 mt-1">Hospital invitation required</div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
-              <span>Scheduled Admissions</span>
-              <Calendar className="w-4 h-4 text-indigo-600" />
+              <span>Health Insurance / TPA</span>
+              <Shield className="w-4 h-4 text-emerald-600" />
             </div>
-            <div className="text-2xl font-black text-indigo-600">{scheduledCount}</div>
-            <div className="text-[11px] text-slate-400 mt-1">Flights & hospital booked</div>
+            <div className="text-2xl font-black text-emerald-600">{insuranceCount}</div>
+            <div className="text-[11px] text-slate-400 mt-1">Cashless TPA / claim assist</div>
           </div>
         </div>
 
         {/* Filters & Search Row */}
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             {/* Search */}
             <div className="lg:col-span-2 relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search patient, case #, procedure, country..."
+                placeholder="Search patient, case #, procedure, insurance..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
               />
+            </div>
+
+            {/* Assistance Filter (Hotel, Visa, Insurance) */}
+            <div>
+              <select
+                value={assistanceFilter}
+                onChange={(e) => setAssistanceFilter(e.target.value)}
+                className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Concierge Needs</option>
+                <option value="hotel">🏨 Needs Hotel / Lodging</option>
+                <option value="visa">🛂 Needs Medical Visa</option>
+                <option value="insurance">🛡️ Needs Health Insurance / TPA</option>
+              </select>
             </div>
 
             {/* Status Filter */}
@@ -390,7 +409,7 @@ export default function CoordinatorDashboardPage() {
                     <th className="py-3.5 px-4">Specialty & Diagnosis</th>
                     <th className="py-3.5 px-4">Destination</th>
                     <th className="py-3.5 px-4">Quote / Hospital</th>
-                    <th className="py-3.5 px-4">Travel Needs</th>
+                    <th className="py-3.5 px-4">Hotel / Visa / Insurance</th>
                     <th className="py-3.5 px-4">Status</th>
                     <th className="py-3.5 px-4 text-right">Action</th>
                   </tr>
@@ -469,26 +488,31 @@ export default function CoordinatorDashboardPage() {
                           )}
                         </td>
 
-                        {/* Travel Needs Pills */}
+                        {/* Travel, Hotel, Visa & Insurance Pills */}
                         <td className="py-3.5 px-4">
-                          <div className="flex flex-wrap gap-1 max-w-[120px]">
+                          <div className="flex flex-wrap gap-1 max-w-[150px]">
+                            {c.travel_preferences?.need_hotel_booking && (
+                              <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold flex items-center gap-0.5" title="Hotel / Accommodation Needed">
+                                <Building2 className="w-2.5 h-2.5" /> Hotel
+                              </span>
+                            )}
                             {c.travel_preferences?.need_visa_assistance && (
-                              <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold" title="e-Medical Visa Needed">
-                                Visa
+                              <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold flex items-center gap-0.5" title="e-Medical Visa Invitation Needed">
+                                <FileBadge className="w-2.5 h-2.5" /> Visa
+                              </span>
+                            )}
+                            {c.travel_preferences?.need_insurance_assistance && (
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-0.5" title="Health Insurance / Cashless Claim Needed">
+                                <Shield className="w-2.5 h-2.5" /> Insurance
                               </span>
                             )}
                             {c.travel_preferences?.need_airport_transfer && (
-                              <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold" title="Airport Transfer Needed">
-                                Transfer
-                              </span>
-                            )}
-                            {c.travel_preferences?.need_hotel_booking && (
-                              <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold" title="Hotel Needed">
-                                Hotel
+                              <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px]" title="Airport Transfer">
+                                Car
                               </span>
                             )}
                             {c.travel_preferences?.need_translator && (
-                              <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold" title="Interpreter Needed">
+                              <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px]" title="Language Interpreter">
                                 Lang
                               </span>
                             )}
@@ -599,24 +623,72 @@ export default function CoordinatorDashboardPage() {
                   )}
                 </div>
 
-                {/* Travel & Concierge Requirements */}
-                <div className="mb-6">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Requested Travel Services
+                {/* Specific Hotel, Visa & Health Insurance Assistance Breakdown */}
+                <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                    <span>Hotel, Visa & Health Insurance Coordination</span>
+                    <Plane className="w-3.5 h-3.5 text-blue-600" />
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div className={`p-2.5 rounded-xl border text-center ${selectedCase.travel_preferences?.need_visa_assistance ? 'bg-blue-50 border-blue-200 text-blue-800 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                      Medical Visa
+
+                  {/* 1. Hotel Assistance Detail */}
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs">
+                    <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-purple-600" /> Hotel / Accommodation:
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] ${selectedCase.travel_preferences?.need_hotel_booking ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-500'}`}>
+                        {selectedCase.travel_preferences?.need_hotel_booking ? 'Assistance Requested' : 'Not Requested'}
+                      </span>
                     </div>
-                    <div className={`p-2.5 rounded-xl border text-center ${selectedCase.travel_preferences?.need_airport_transfer ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                      Airport Car
+                    {selectedCase.travel_preferences?.need_hotel_booking ? (
+                      <div className="text-slate-600 text-[11px] space-y-0.5">
+                        <div>Tier: <strong className="text-slate-800 capitalize">{selectedCase.travel_preferences.accommodation_type?.replace(/_/g, ' ') || 'Serviced Family Apartment'}</strong></div>
+                        <div>Guests / Attendants: <strong className="text-slate-800">{selectedCase.travel_preferences.companion_count || '1'} companion(s)</strong></div>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-slate-400">Patient arranging own lodging or hospital inpatient room only.</div>
+                    )}
+                  </div>
+
+                  {/* 2. Medical Visa Assistance Detail */}
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs">
+                    <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <FileBadge className="w-3.5 h-3.5 text-blue-600" /> Medical Visa (e-Visa):
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] ${selectedCase.travel_preferences?.need_visa_assistance ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-500'}`}>
+                        {selectedCase.travel_preferences?.need_visa_assistance ? 'Visa Letters Required' : 'Not Needed'}
+                      </span>
                     </div>
-                    <div className={`p-2.5 rounded-xl border text-center ${selectedCase.travel_preferences?.need_hotel_booking ? 'bg-purple-50 border-purple-200 text-purple-800 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                      Hotel Stay
+                    {selectedCase.travel_preferences?.need_visa_assistance ? (
+                      <div className="text-slate-600 text-[11px]">
+                        Hospital invitation letters needed for: <strong className="text-slate-800">{selectedCase.travel_preferences.visa_attendants_count || '1'} person(s)</strong> (Patient + Attendants).
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-slate-400">Visa exemption or patient already holds valid visa.</div>
+                    )}
+                  </div>
+
+                  {/* 3. Health Insurance Assistance Detail */}
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs">
+                    <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-emerald-600" /> Health Insurance & TPA:
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] ${selectedCase.travel_preferences?.need_insurance_assistance ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                        {selectedCase.travel_preferences?.need_insurance_assistance ? 'Insurance Assist Needed' : 'Self-Pay / Not Requested'}
+                      </span>
                     </div>
-                    <div className={`p-2.5 rounded-xl border text-center ${selectedCase.travel_preferences?.need_translator ? 'bg-rose-50 border-rose-200 text-rose-800 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                      Translator
-                    </div>
+                    {selectedCase.travel_preferences?.need_insurance_assistance ? (
+                      <div className="text-slate-600 text-[11px] space-y-0.5">
+                        <div>Type: <strong className="text-slate-800 capitalize">{selectedCase.travel_preferences.insurance_type?.replace(/_/g, ' ') || 'International Cashless Claim'}</strong></div>
+                        {selectedCase.travel_preferences.insurance_provider && (
+                          <div>Provider: <strong className="text-emerald-700">{selectedCase.travel_preferences.insurance_provider}</strong></div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-slate-400">Direct hospital cash/wire settlement.</div>
+                    )}
                   </div>
                 </div>
 
@@ -702,8 +774,7 @@ export default function CoordinatorDashboardPage() {
                         value={editQuotedHospital}
                         onChange={(e) => setEditQuotedHospital(e.target.value)}
                         className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800"
-                      >
-                      </input>
+                      />
                     </div>
 
                     <div>
@@ -716,8 +787,7 @@ export default function CoordinatorDashboardPage() {
                         value={editEstimatedCost}
                         onChange={(e) => setEditEstimatedCost(e.target.value)}
                         className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800"
-                      >
-                      </input>
+                      />
                     </div>
                   </div>
 

@@ -22,6 +22,10 @@ import {
   Video,
   Trash2,
   DollarSign,
+  Shield,
+  CreditCard,
+  BedDouble,
+  Users,
 } from 'lucide-react';
 import { supabaseClient } from '@/lib/supabase/client';
 import { UrgencyLevel, Gender, DocumentAttachment } from '@/types/database';
@@ -48,9 +52,23 @@ function IntakeFormContent() {
     destination_country: 'India' as DestinationCountry | string,
     target_timeline: 'Within 1 Month',
     patient_nationality: '',
-    need_visa_assistance: true,
-    need_airport_transfer: true,
+
+    // 1. Hotel & Accommodation Assistance
     need_hotel_booking: true,
+    accommodation_type: 'serviced_apartment',
+    companion_count: '1',
+
+    // 2. Medical Visa Assistance
+    need_visa_assistance: true,
+    visa_attendants_count: '1',
+
+    // 3. Health Insurance Assistance
+    need_insurance_assistance: false,
+    insurance_type: 'has_international_insurance',
+    insurance_provider: '',
+
+    // Other Concierge Services
+    need_airport_transfer: true,
     need_translator: false,
     need_second_opinion: false,
   });
@@ -82,6 +100,7 @@ function IntakeFormContent() {
       need_visa_assistance: qService === 'visa' || prev.need_visa_assistance,
       need_airport_transfer: qService === 'airport' || prev.need_airport_transfer,
       need_hotel_booking: qService === 'hotel' || prev.need_hotel_booking,
+      need_insurance_assistance: qService === 'insurance' || prev.need_insurance_assistance,
       need_translator: qService === 'translator' || prev.need_translator,
       chief_complaint: qDoctor
         ? `Requesting remote second opinion consultation with ${qDoctor} for ${qSpecialty || 'treatment'}.`
@@ -102,6 +121,9 @@ function IntakeFormContent() {
     created_at: string;
     destination_country: string;
     procedure_specialty: string;
+    need_hotel_booking: boolean;
+    need_visa_assistance: boolean;
+    need_insurance_assistance: boolean;
   } | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +182,6 @@ function IntakeFormContent() {
               uploaded_at: new Date().toISOString(),
             });
           } else {
-            // Local fallback simulation
             uploadedDocuments.push({
               name: file.name,
               path: `local_storage/${file.name}`,
@@ -206,6 +227,9 @@ function IntakeFormContent() {
         created_at: result.case.created_at,
         destination_country: formData.destination_country,
         procedure_specialty: formData.procedure_specialty,
+        need_hotel_booking: formData.need_hotel_booking,
+        need_visa_assistance: formData.need_visa_assistance,
+        need_insurance_assistance: formData.need_insurance_assistance,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'An error occurred during submission.';
@@ -249,12 +273,20 @@ function IntakeFormContent() {
               <span className="font-semibold text-slate-800">{submittedCase.destination_country}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-200">
-              <span className="text-slate-500 font-medium">Medical Specialty:</span>
+              <span className="text-slate-500 font-medium">Specialty / Procedure:</span>
               <span className="font-semibold text-slate-800">{submittedCase.procedure_specialty}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-slate-200">
+              <span className="text-slate-500 font-medium">Requested Coordination:</span>
+              <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                {submittedCase.need_hotel_booking && <span className="text-purple-700">🏨 Hotel</span>}
+                {submittedCase.need_visa_assistance && <span className="text-blue-700">• 🛂 Visa</span>}
+                {submittedCase.need_insurance_assistance && <span className="text-emerald-700">• 🛡️ Insurance</span>}
+              </span>
             </div>
             <div className="flex justify-between py-1">
               <span className="text-slate-500 font-medium">Next Action:</span>
-              <span className="font-semibold text-emerald-700">Official Hospital Quote & Visa Letter within 24–48 Hours</span>
+              <span className="font-semibold text-emerald-700">Official Hospital Quote & Concierge Plan within 24–48 Hours</span>
             </div>
           </div>
 
@@ -294,7 +326,7 @@ function IntakeFormContent() {
             Request an Accredited Hospital Treatment Quote
           </h1>
           <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-            Fill in your medical details and upload existing scans or reports. Our medical tourism team will obtain itemized cost estimates from JCI/NABH hospitals in your chosen destination.
+            Fill in your medical details, diagnostic records, and travel assistance needs (hotel, medical visa, or health insurance coordination).
           </p>
         </div>
 
@@ -581,93 +613,241 @@ function IntakeFormContent() {
             </div>
           </div>
 
-          {/* Section 4: End-to-End Travel Coordination Assistance */}
+          {/* Section 4: Travel, Hotel, Visa & Health Insurance Assistance */}
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
             <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100">
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
                 4
               </div>
               <div>
-                <h3 className="font-bold text-base text-slate-900">End-to-End Travel Concierge Services</h3>
-                <p className="text-xs text-slate-500">Select any complimentary or coordinated travel assistance you need.</p>
+                <h3 className="font-bold text-base text-slate-900">
+                  Hotel, Visa & Health Insurance Assistance
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Select your required support options for accommodation, medical visas, and health insurance.
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-blue-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={formData.need_visa_assistance}
-                  onChange={(e) => setFormData({ ...formData, need_visa_assistance: e.target.checked })}
-                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <div>
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <FileBadge className="w-3.5 h-3.5 text-blue-600" /> Medical Visa (e-Med) Invitation
+            <div className="space-y-6">
+              {/* 1. Hotel / Accommodation Assistance Block */}
+              <div className={`p-4 sm:p-5 rounded-2xl border transition ${formData.need_hotel_booking ? 'bg-purple-50/50 border-purple-200 ring-1 ring-purple-300' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="hotel_checkbox"
+                      checked={formData.need_hotel_booking}
+                      onChange={(e) => setFormData({ ...formData, need_hotel_booking: e.target.checked })}
+                      className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500 mt-0.5 cursor-pointer"
+                    />
+                    <label htmlFor="hotel_checkbox" className="cursor-pointer">
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-purple-600" />
+                        <span>Hotel & Accommodation Assistance</span>
+                        <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
+                          Near Hospital
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Discounted lodging with kitchenettes for companion cooking, 24/7 security, and wheelchair access within 5 minutes of your accredited hospital.
+                      </p>
+                    </label>
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">Official embassy letter for patient + up to 2 companions.</div>
                 </div>
-              </label>
 
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-blue-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={formData.need_airport_transfer}
-                  onChange={(e) => setFormData({ ...formData, need_airport_transfer: e.target.checked })}
-                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <div>
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <Car className="w-3.5 h-3.5 text-emerald-600" /> VIP Airport Pickup / Transfer
-                  </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">Complimentary private chauffeur direct to hospital.</div>
-                </div>
-              </label>
+                {formData.need_hotel_booking && (
+                  <div className="mt-4 pt-4 border-t border-purple-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Preferred Accommodation Tier
+                      </label>
+                      <select
+                        value={formData.accommodation_type}
+                        onChange={(e) => setFormData({ ...formData, accommodation_type: e.target.value })}
+                        className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="serviced_apartment">🏢 Serviced Family Apartment ($35 – $75/night with kitchen)</option>
+                        <option value="partner_hotel_4star">⭐ 4-Star / 5-Star Partner Hotel ($60 – $130/night corporate rate)</option>
+                        <option value="budget_guesthouse">🛏️ Budget Medical Guest House ($20 – $35/night)</option>
+                        <option value="recovery_suite">🌿 Post-Op Recuperation & Wellness Suite ($80 – $150/night)</option>
+                      </select>
+                    </div>
 
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-blue-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={formData.need_hotel_booking}
-                  onChange={(e) => setFormData({ ...formData, need_hotel_booking: e.target.checked })}
-                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <div>
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-purple-600" /> Companion Hotel Booking
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Number of Attendants / Guests
+                      </label>
+                      <select
+                        value={formData.companion_count}
+                        onChange={(e) => setFormData({ ...formData, companion_count: e.target.value })}
+                        className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="1">Patient + 1 Companion (1 Double Room / Studio)</option>
+                        <option value="2">Patient + 2 Companions (2-Bedroom Apartment)</option>
+                        <option value="3+">Patient + 3+ Family Members (Large Serviced Suite)</option>
+                        <option value="0">Patient Traveling Alone (Hospital stay only)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">Discounted 4-star or serviced apartment near hospital.</div>
-                </div>
-              </label>
+                )}
+              </div>
 
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-blue-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={formData.need_translator}
-                  onChange={(e) => setFormData({ ...formData, need_translator: e.target.checked })}
-                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <div>
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <Languages className="w-3.5 h-3.5 text-rose-600" /> Dedicated Language Interpreter
+              {/* 2. Medical Visa Assistance Block */}
+              <div className={`p-4 sm:p-5 rounded-2xl border transition ${formData.need_visa_assistance ? 'bg-blue-50/50 border-blue-200 ring-1 ring-blue-300' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="visa_checkbox"
+                      checked={formData.need_visa_assistance}
+                      onChange={(e) => setFormData({ ...formData, need_visa_assistance: e.target.checked })}
+                      className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer"
+                    />
+                    <label htmlFor="visa_checkbox" className="cursor-pointer">
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <FileBadge className="w-4 h-4 text-blue-600" />
+                        <span>Medical Visa (e-Visa) & Embassy Invitation Letter</span>
+                        <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
+                          Fast-Track
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Official hospital visa invitation letter dispatched to the embassy/consulate within 24 hours for fast-tracked e-Medical clearance.
+                      </p>
+                    </label>
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">Arabic, Russian, French, Spanish, Swahili, etc.</div>
                 </div>
-              </label>
 
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-blue-50/50 transition sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={formData.need_second_opinion}
-                  onChange={(e) => setFormData({ ...formData, need_second_opinion: e.target.checked })}
-                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <div>
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <Video className="w-3.5 h-3.5 text-indigo-600" /> Pre-Travel Specialist Second Opinion Video Consultation
+                {formData.need_visa_assistance && (
+                  <div className="mt-4 pt-4 border-t border-blue-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Total Visas Required (Patient + Attendants)
+                      </label>
+                      <select
+                        value={formData.visa_attendants_count}
+                        onChange={(e) => setFormData({ ...formData, visa_attendants_count: e.target.value })}
+                        className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="1">1 Person (Patient Only)</option>
+                        <option value="2">2 Persons (Patient + 1 Medical Attendant)</option>
+                        <option value="3">3 Persons (Patient + 2 Medical Attendants)</option>
+                      </select>
+                    </div>
+                    <div className="text-xs text-slate-500 flex items-center">
+                      <span>✓ Official letters cover patient and linked attendants with triple-entry privileges.</span>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">30-min live video call with operating surgeon before booking flights (credited back upon surgery).</div>
+                )}
+              </div>
+
+              {/* 3. Health Insurance & Cashless TPA Assistance Block */}
+              <div className={`p-4 sm:p-5 rounded-2xl border transition ${formData.need_insurance_assistance ? 'bg-emerald-50/50 border-emerald-200 ring-1 ring-emerald-300' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="insurance_checkbox"
+                      checked={formData.need_insurance_assistance}
+                      onChange={(e) => setFormData({ ...formData, need_insurance_assistance: e.target.checked })}
+                      className="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 mt-0.5 cursor-pointer"
+                    />
+                    <label htmlFor="insurance_checkbox" className="cursor-pointer">
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-emerald-600" />
+                        <span>Health Insurance & Cashless TPA Assistance</span>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                          Overseas Claims
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        International insurance pre-authorization (Bupa, Cigna, Allianz, Aetna, AXA), cashless hospital TPA desk coordination, or medical travel complication coverage.
+                      </p>
+                    </label>
+                  </div>
                 </div>
-              </label>
+
+                {formData.need_insurance_assistance && (
+                  <div className="mt-4 pt-4 border-t border-emerald-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Insurance Status / Service Needed
+                      </label>
+                      <select
+                        value={formData.insurance_type}
+                        onChange={(e) => setFormData({ ...formData, insurance_type: e.target.value })}
+                        className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="has_international_insurance">💳 I have international health insurance (Need Cashless TPA Guarantee)</option>
+                        <option value="need_travel_complication_insurance">🛡️ Need to purchase Medical Travel Complication Insurance ($150–$300)</option>
+                        <option value="self_pay_tpa_reimbursement">📄 Self-Pay — Need itemized international bills to claim back home</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Insurance Company / Policy # (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Bupa Global, Cigna Worldwide, Allianz Care..."
+                        value={formData.insurance_provider}
+                        onChange={(e) => setFormData({ ...formData, insurance_provider: e.target.value })}
+                        className="w-full py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Services (Airport Transfer, Interpreter, Second Opinion) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition text-xs">
+                  <input
+                    type="checkbox"
+                    checked={formData.need_airport_transfer}
+                    onChange={(e) => setFormData({ ...formData, need_airport_transfer: e.target.checked })}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
+                  />
+                  <div>
+                    <div className="font-bold text-slate-900 flex items-center gap-1">
+                      <Car className="w-3.5 h-3.5 text-blue-600" /> Airport Transfer
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Complimentary sedan/van pickup.</div>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition text-xs">
+                  <input
+                    type="checkbox"
+                    checked={formData.need_translator}
+                    onChange={(e) => setFormData({ ...formData, need_translator: e.target.checked })}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
+                  />
+                  <div>
+                    <div className="font-bold text-slate-900 flex items-center gap-1">
+                      <Languages className="w-3.5 h-3.5 text-rose-600" /> Language Interpreter
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Arabic, Russian, French, etc.</div>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition text-xs">
+                  <input
+                    type="checkbox"
+                    checked={formData.need_second_opinion}
+                    onChange={(e) => setFormData({ ...formData, need_second_opinion: e.target.checked })}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mt-0.5"
+                  />
+                  <div>
+                    <div className="font-bold text-slate-900 flex items-center gap-1">
+                      <Video className="w-3.5 h-3.5 text-indigo-600" /> Video Second Opinion
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">30-min call before travel.</div>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -692,7 +872,7 @@ function IntakeFormContent() {
               )}
             </button>
             <p className="text-[11px] text-slate-400 mt-3">
-              🔒 100% Free & No Obligation. Protected by Supabase Row-Level Security. JCI response within 24h.
+              🔒 100% Free & No Obligation. Covers Hotel, Visa & Insurance assistance. Response within 24h.
             </p>
           </div>
         </form>

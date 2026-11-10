@@ -27,9 +27,23 @@ export interface TravelPreferences {
   specific_procedure?: string;
   target_timeline?: string;
   patient_nationality?: string;
-  need_visa_assistance?: boolean;
-  need_airport_transfer?: boolean;
+
+  // Accommodation Assistance
   need_hotel_booking?: boolean;
+  accommodation_type?: 'serviced_apartment' | 'partner_hotel_4star' | 'budget_guesthouse' | 'recovery_suite' | string;
+  companion_count?: number | string;
+
+  // Visa Assistance
+  need_visa_assistance?: boolean;
+  visa_attendants_count?: number | string;
+
+  // Health Insurance Assistance
+  need_insurance_assistance?: boolean;
+  insurance_type?: 'has_international_insurance' | 'need_travel_complication_insurance' | 'self_pay_tpa_reimbursement' | string;
+  insurance_provider?: string;
+
+  // Other Concierge Services
+  need_airport_transfer?: boolean;
   need_translator?: boolean;
   need_second_opinion?: boolean;
   budget_currency?: string;
@@ -91,9 +105,23 @@ export interface IntakeFormData {
   destination_country: DestinationCountry | string;
   target_timeline: string;
   patient_nationality: string;
-  need_visa_assistance: boolean;
-  need_airport_transfer: boolean;
+
+  // Accommodation Assistance
   need_hotel_booking: boolean;
+  accommodation_type: string;
+  companion_count: string;
+
+  // Visa Assistance
+  need_visa_assistance: boolean;
+  visa_attendants_count: string;
+
+  // Health Insurance Assistance
+  need_insurance_assistance: boolean;
+  insurance_type: string;
+  insurance_provider: string;
+
+  // Other Services
+  need_airport_transfer: boolean;
   need_translator: boolean;
   need_second_opinion: boolean;
 }

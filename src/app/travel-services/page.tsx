@@ -18,10 +18,13 @@ import {
   HeartHandshake,
   Luggage,
   Sparkles,
+  Shield,
+  CreditCard,
+  Building2,
 } from 'lucide-react';
 
 export default function TravelServicesPage() {
-  const [activeTab, setActiveTab] = useState<'visa' | 'transfer' | 'hotel' | 'translators'>('visa');
+  const [activeTab, setActiveTab] = useState<'visa' | 'hotel' | 'insurance' | 'transfer' | 'translators'>('visa');
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 sm:py-14">
@@ -33,18 +36,18 @@ export default function TravelServicesPage() {
             Full Concierge & Logistics
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            End-to-End Travel, Visa & Local Coordination
+            End-to-End Travel, Accommodation, Visa & Insurance
           </h1>
           <p className="mt-4 text-base text-slate-600 leading-relaxed">
-            Medical travel shouldn&apos;t be stressful. Med Vantage takes care of everything outside the operating room: official medical visa invitation letters, airport tarmac ambulance pick-up, partner hotels, and in-person medical interpreters.
+            Medical travel shouldn&apos;t be stressful. Med Vantage takes care of everything outside the operating room: official medical visa invitation letters, family hotel apartments near hospitals, cashless health insurance TPA coordination, and in-person medical interpreters.
           </p>
         </div>
 
-        {/* 4 Pillars Navigation Tabs */}
+        {/* 5 Pillars Navigation Tabs */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
           <button
             onClick={() => setActiveTab('visa')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'visa'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
                 : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
@@ -54,37 +57,48 @@ export default function TravelServicesPage() {
             <span>1. Medical Visa (e-Visa)</span>
           </button>
           <button
+            onClick={() => setActiveTab('hotel')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'hotel'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-500/25'
+                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>2. Hotel & Accommodation</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('insurance')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'insurance'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25'
+                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            <span>3. Health Insurance & TPA</span>
+          </button>
+          <button
             onClick={() => setActiveTab('transfer')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'transfer'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
                 : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
             }`}
           >
             <Car className="w-4 h-4" />
-            <span>2. VIP Airport Transfers</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('hotel')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition ${
-              activeTab === 'hotel'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <Building className="w-4 h-4" />
-            <span>3. Partner Accommodations</span>
+            <span>4. VIP Airport Transfers</span>
           </button>
           <button
             onClick={() => setActiveTab('translators')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'translators'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
                 : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
             }`}
           >
             <Languages className="w-4 h-4" />
-            <span>4. Dedicated Interpreters</span>
+            <span>5. Dedicated Interpreters</span>
           </button>
         </div>
 
@@ -131,7 +145,7 @@ export default function TravelServicesPage() {
                   href="/intake?service=visa"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/25 transition"
                 >
-                  <span>Request Hospital Visa Letter</span>
+                  <span>Request Hospital Visa Letter with Case</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -173,7 +187,141 @@ export default function TravelServicesPage() {
           </div>
         )}
 
-        {/* Tab 2: Airport Transfers */}
+        {/* Tab 2: Hotel & Accommodation */}
+        {activeTab === 'hotel' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div>
+                <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wider mb-3 inline-block">
+                  Rest & Recovery
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-4">
+                  Partner Hotels & Serviced Family Apartments
+                </h2>
+                <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                  While the patient stays in the hospital during surgery, accompanying family members need safe, hygienic, and affordable lodging within walking distance or 5 minutes of the hospital.
+                </p>
+
+                <div className="space-y-3 mb-8 text-xs text-slate-700">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="font-bold text-sm text-slate-900 mb-1">Serviced Family Apartments ($35 – $75/night)</div>
+                    <p className="text-slate-500">Fully equipped kitchens to prepare dietary food, washing machine, WiFi, and 24/7 security.</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="font-bold text-sm text-slate-900 mb-1">4-Star & 5-Star Partner Hotels ($60 – $130/night)</div>
+                    <p className="text-slate-500">Hyatt, Marriott, Novotel, and boutique partner hotels with negotiated corporate discounts.</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="font-bold text-sm text-slate-900 mb-1">Nursing Visits & Post-Discharge Monitoring</div>
+                    <p className="text-slate-500">Arranged visiting nurse for wound dressing and physiotherapy sessions in your hotel room.</p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/intake?service=hotel"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md shadow-purple-500/25 transition"
+                >
+                  <span>Select Lodging Options with Intake</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200">
+                <h3 className="font-bold text-base text-slate-900 mb-4">
+                  Why Book Through Med Vantage?
+                </h3>
+                <ul className="space-y-3 text-xs text-slate-700 mb-6">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Up to 40% discounted corporate hospital patient rates</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Free cancellation if surgery schedule or flight date changes</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Wheelchair-accessible rooms with roll-in showers</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Daily complimentary hospital shuttle service</span>
+                  </li>
+                </ul>
+
+                <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-900 text-xs">
+                  <span className="font-bold">🌿 Holistic Wellness Add-On:</span> Combine surgery with an Ayurvedic retreat in Kerala, India or a medical spa in Chiang Mai, Thailand for post-op recuperation.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Health Insurance & Cashless TPA Support */}
+        {activeTab === 'insurance' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div>
+                <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3 inline-block">
+                  Cashless & TPA Coverage
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-4">
+                  Health Insurance & Cashless TPA Claim Assistance
+                </h2>
+                <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                  Most accredited international hospitals (Apollo, Fortis, Bumrungrad, Acıbadem) have dedicated <strong className="text-slate-900">TPA (Third Party Administrator) Desks</strong> that work directly with leading international insurers to provide cashless pre-authorization or standardized reimbursement documentation.
+                </p>
+
+                <div className="space-y-3 mb-8 text-xs text-slate-700">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="font-bold text-sm text-slate-900 mb-1">Cashless Hospital Pre-Authorization</div>
+                    <p className="text-slate-500">We submit your pre-op diagnosis and surgical estimate directly to Bupa, Cigna, Allianz, Aetna, AXA, or MetLife to get approval before you fly.</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="font-bold text-sm text-slate-900 mb-1">Medical Travel Complication Insurance ($150 – $300)</div>
+                    <p className="text-slate-500">Optional bespoke policy covering unforeseen surgical complications, emergency medical evacuation, and travel disruptions.</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="font-bold text-sm text-slate-900 mb-1">Standardized International Claim Documentation</div>
+                    <p className="text-slate-500">For self-pay patients whose home insurers cover overseas care, we provide stamped discharge summaries with ICD-10 and CPT coding.</p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/intake?service=insurance"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-500/25 transition"
+                >
+                  <span>Request Insurance Pre-Auth Support</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200">
+                <h3 className="font-bold text-base text-slate-900 mb-3 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                  Recognized International Insurers
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Our hospital network directly coordinates with major international health plans:
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-800 mb-6">
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-center">Bupa International</div>
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-center">Cigna Global</div>
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-center">Allianz Worldwide</div>
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-center">Aetna International</div>
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-center">AXA Global Healthcare</div>
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 text-center">MetLife Worldwide</div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
+                  <span className="font-bold">✓ TPA Guarantee of Payment (GOP):</span> Once the hospital TPA desk receives your insurer&apos;s GOP, you pay $0 out of pocket upon hospital admission.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Airport Transfers */}
         {activeTab === 'transfer' && (
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm mb-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -245,77 +393,7 @@ export default function TravelServicesPage() {
           </div>
         )}
 
-        {/* Tab 3: Hotel Accommodations */}
-        {activeTab === 'hotel' && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wider mb-3 inline-block">
-                  Rest & Recovery
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-4">
-                  Partner Hotels & Serviced Recovery Suites
-                </h2>
-                <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                  While the patient stays in the hospital during surgery, accompanying family members need safe, hygienic, and affordable lodging within walking distance or 5 minutes of the hospital.
-                </p>
-
-                <div className="space-y-3 mb-8 text-xs text-slate-700">
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-sm text-slate-900 mb-1">Serviced Family Apartments ($35 – $75/night)</div>
-                    <p className="text-slate-500">Fully equipped kitchens to prepare dietary food, washing machine, WiFi, and 24/7 security.</p>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-sm text-slate-900 mb-1">4-Star & 5-Star Partner Hotels ($60 – $140/night)</div>
-                    <p className="text-slate-500">Hyatt, Marriott, Novotel, and boutique partner hotels with negotiated patient corporate discounts.</p>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-sm text-slate-900 mb-1">Nursing Visits & Post-Discharge Monitoring</div>
-                    <p className="text-slate-500">Arranged visiting nurse for wound dressing and physiotherapy sessions in your hotel room.</p>
-                  </div>
-                </div>
-
-                <Link
-                  href="/intake?service=hotel"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/25 transition"
-                >
-                  <span>Select Lodging Options with Intake</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200">
-                <h3 className="font-bold text-base text-slate-900 mb-4">
-                  Why Book Through Med Vantage?
-                </h3>
-                <ul className="space-y-3 text-xs text-slate-700 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Up to 40% discounted corporate hospital patient rates</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Free cancellation if surgery schedule or flight date changes</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Wheelchair-accessible rooms with roll-in showers</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Daily complimentary hospital shuttle service</span>
-                  </li>
-                </ul>
-
-                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs">
-                  <span className="font-bold">🌿 Holistic Wellness Add-On:</span> Combine surgery with an Ayurvedic retreat in Kerala, India or a medical spa in Chiang Mai, Thailand for post-op recuperation.
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 4: Language Interpreters */}
+        {/* Tab 5: Language Interpreters */}
         {activeTab === 'translators' && (
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm mb-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
