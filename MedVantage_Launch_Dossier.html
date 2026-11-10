@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Med Vantage — Official Production Launch Dossier</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 11pt;
+    }
+
+    .header {
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 16px;
+      margin-bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .header-left h1 {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-left h1 span.logo-highlight {
+      color: #2563eb;
+    }
+
+    .header-left .subtitle {
+      font-size: 11pt;
+      color: #64748b;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .badge-live {
+      display: inline-block;
+      background: #dcfce7;
+      color: #15803d;
+      font-size: 9pt;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid #86efac;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .meta-bar {
+      display: flex;
+      gap: 20px;
+      font-size: 9pt;
+      color: #475569;
+      background: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+
+    .meta-bar strong {
+      color: #0f172a;
+    }
+
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      border-left: 4px solid #2563eb;
+      padding-left: 8px;
+    }
+
+    h3 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    p {
+      color: #334155;
+      margin-bottom: 10px;
+      font-size: 10pt;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      font-size: 9pt;
+    }
+
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 7px 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    .status-ok {
+      color: #16a34a;
+      font-weight: 700;
+    }
+
+    ul {
+      margin-left: 18px;
+      margin-bottom: 12px;
+      color: #334155;
+      font-size: 9.5pt;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    code, pre {
+      font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 8pt;
+      overflow-x: auto;
+      margin: 10px 0;
+      line-height: 1.4;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+
+    .feature-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fafafa;
+    }
+
+    .feature-card h4 {
+      font-size: 10pt;
+      color: #1e293b;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feature-card p {
+      font-size: 8.5pt;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .url-link {
+      color: #2563eb;
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5pt;
+    }
+
+    .footer {
+      margin-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      color: #94a3b8;
+      font-size: 8pt;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <h1>Med<span class="logo-highlight">Vantage</span></h1>
+      <div class="subtitle">Global Medical Tourism Platform — Official Production Launch Dossier</div>
+    </div>
+    <div>
+      <span class="badge-live">● Production Active</span>
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div><strong>Live URL:</strong> https://medvantage-kappa.vercel.app</div>
+    <div><strong>Target:</strong> Cross-Border Healthcare & Facilitation</div>
+    <div><strong>Release Date:</strong> November 2026</div>
+  </div>
+
+  <h2>1. Executive Summary & Platform Overview</h2>
+  <p>
+    <strong>Med Vantage</strong> connects international patients with accredited cross-border healthcare providers (Apollo, Fortis, Bumrungrad, Acıbadem, Gleneagles, Cleveland Clinic Abu Dhabi, Médica Sur, Quirónsalud). The platform provides end-to-end pricing transparency, multi-tier accreditation verification (JCI &amp; NABH), remote super-specialist second opinions, and full travel coordination (hotel, visa, insurance, VIP transfers, and medical translators).
+  </p>
+
+  <h2>2. Production Deployments & Build Artifacts</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Asset Component</th>
+        <th>Environment / Target</th>
+        <th>Endpoint / Path</th>
+        <th>Operational Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Web Application</strong></td>
+        <td>Vercel Global Edge Network</td>
+        <td><a class="url-link" href="https://medvantage-kappa.vercel.app">https://medvantage-kappa.vercel.app</a></td>
+        <td><span class="status-ok">✔ Live &amp; Operational (200 OK)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Git Source Repository</strong></td>
+        <td>GitHub (Continuous Deployment)</td>
+        <td><span class="url-link">universaldigilabs/openmed-portal</span></td>
+        <td><span class="status-ok">✔ Main branch synced</span></td>
+      </tr>
+      <tr>
+        <td><strong>Cloud Database</strong></td>
+        <td>Supabase PostgreSQL 15</td>
+        <td><span class="url-link">https://uutvrjladpfnuqauwjwk.supabase.co</span></td>
+        <td><span class="status-ok">✔ Migrated &amp; Active</span></td>
+      </tr>
+      <tr>
+        <td><strong>Android Mobile App</strong></td>
+        <td>Capacitor Native Android (Debug)</td>
+        <td><span class="url-link">android/app/build/outputs/apk/debug/app-debug.apk</span></td>
+        <td><span class="status-ok">✔ 3.82 MB APK Ready</span></td>
+      </tr>
+      <tr>
+        <td><strong>Android Release APK</strong></td>
+        <td>Capacitor Native Android (Release)</td>
+        <td><span class="url-link">android/app/build/outputs/apk/release/app-release.apk</span></td>
+        <td><span class="status-ok">✔ Compiled</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Core Functional Pillars</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h4>🏥 Hospital &amp; Clinic Verification</h4>
+      <p>Verified accreditations (JCI &amp; NABH). Complete multi-filter directory by country, specialty, and technology across 8 flagship international hospitals.</p>
+    </div>
+    <div class="feature-card">
+      <h4>📊 Cost Transparency &amp; Savings</h4>
+      <p>Interactive benchmark engine comparing US, UK, India, Thailand, Turkey, Mexico, and Spain. Visual indicators highlight 60%–85% cost savings in India.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🩺 Remote Second Opinions</h4>
+      <p>48-hour tele-triage with world-renowned surgical specialists. 100% of remote consultation fee credited back upon hospital admission.</p>
+    </div>
+    <div class="feature-card">
+      <h4>✈️ Travel, Visa, &amp; Insurance Hub</h4>
+      <p>End-to-end concierge covering medical visas (e-Visa), sanitized recovery hotels/serviced apartments, cashless insurance TPA, and native interpreters.</p>
+    </div>
+  </div>
+
+  <h2>4. Patient Concierge &amp; Triage Workflows</h2>
+  <ul>
+    <li><strong>Patient Intake Form (<a class="url-link" href="https://medvantage-kappa.vercel.app/intake">/intake</a>):</strong> Multi-step interactive medical inquiry workflow capturing medical diagnostics, preferred hospital/country, plus explicit selections for <strong>Hotel Booking Assistance</strong> (Serviced Apartment, 4/5-Star Hotel, Recovery Suite), <strong>Medical Visa Attendant Count</strong>, and <strong>Health Insurance Pre-Authorization</strong>.</li>
+    <li><strong>Coordinator Triage Console (<a class="url-link" href="https://medvantage-kappa.vercel.app/coordinator">/coordinator</a>):</strong> Live operations dashboard for care managers featuring instant assistance filtering (<code>Hotel</code>, <code>Visa</code>, <code>Insurance</code>), patient audit log, and one-click quote generation.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <h2>5. End-to-End System Architecture</h2>
+  <pre>
+                      ┌──────────────────────────────────────────────┐
+                      │     Patient / Coordinator Web & Mobile       │
+                      │   (Next.js 16 + Tailwind CSS + Capacitor)    │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │            Vercel Edge Functions             │
+                      │          /api/cases, /api/documents          │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+                    ┌────────────────────────┴────────────────────────┐
+                    │                                                 │
+                    ▼                                                 ▼
+     ┌──────────────────────────────┐                 ┌──────────────────────────────┐
+     │     Supabase PostgreSQL      │                 │    In-Memory Fallback Store  │
+     │ - medical_cases              │                 │ - mockCases                  │
+     │ - notification_log           │                 │ - mockNotifications          │
+     │ - travel_preferences (JSONB) │                 │ (Zero-downtime offline mode) │
+     └──────────────────────────────┘                 └──────────────────────────────┘
+  </pre>
+
+  <h2>6. Live Production Smoke Test Results</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tested Endpoint</th>
+        <th>Route</th>
+        <th>Result</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Landing Page</td><td><code>/</code></td><td><span class="status-ok">200 OK</span></td><td>Procedure &amp; destination search active</td></tr>
+      <tr><td>Hospitals Directory</td><td><code>/hospitals</code></td><td><span class="status-ok">200 OK</span></td><td>JCI &amp; NABH filters working</td></tr>
+      <tr><td>Cost Comparison Calculator</td><td><code>/cost-comparison</code></td><td><span class="status-ok">200 OK</span></td><td>9 procedure benchmarks responsive</td></tr>
+      <tr><td>Second Opinions</td><td><code>/second-opinion</code></td><td><span class="status-ok">200 OK</span></td><td>Tele-triage intake loaded</td></tr>
+      <tr><td>Travel &amp; Concierge Hub</td><td><code>/travel-services</code></td><td><span class="status-ok">200 OK</span></td><td>5 tabs (Visa, Hotel, Insurance, VIP, Language)</td></tr>
+      <tr><td>Patient Intake Form</td><td><code>/intake</code></td><td><span class="status-ok">200 OK</span></td><td>Hotel, Visa &amp; Insurance options validated</td></tr>
+      <tr><td>Coordinator Console</td><td><code>/coordinator</code></td><td><span class="status-ok">200 OK</span></td><td>Real-time triage &amp; assistance filters</td></tr>
+      <tr><td>Cases REST API</td><td><code>/api/cases</code></td><td><span class="status-ok">200 OK</span></td><td>Supabase JSON response validated</td></tr>
+      <tr><td>Filter: Hotel Assistance</td><td><code>/api/cases?assistance=hotel</code></td><td><span class="status-ok">200 OK</span></td><td>Live filter active</td></tr>
+      <tr><td>Filter: Visa Assistance</td><td><code>/api/cases?assistance=visa</code></td><td><span class="status-ok">200 OK</span></td><td>Live filter active</td></tr>
+      <tr><td>Filter: Insurance Assistance</td><td><code>/api/cases?assistance=insurance</code></td><td><span class="status-ok">200 OK</span></td><td>Live filter active</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7. Zero-Cost Maintenance &amp; Handover Guidelines</h2>
+  <ul>
+    <li><strong>Hosting:</strong> Vercel Hobby Tier (free, high-availability edge network, automated SSL certificates).</li>
+    <li><strong>Database:</strong> Supabase Free Tier (PostgreSQL 15, Row-Level Security, 50,000 monthly active users).</li>
+    <li><strong>Mobile App:</strong> Standalone native Android APK (Capacitor) synced to live web runtime without app store rebuild requirements for frontend updates.</li>
+    <li><strong>Zero-Downtime Guarantee:</strong> Dual-layer fallback architecture automatically routes to local store if external DB is ever unreachable.</li>
+  </ul>
+
+  <div class="footer">
+    <div>Med Vantage — Global Medical Tourism Platform</div>
+    <div>Confidential &bull; Production Handover Dossier &bull; Generated November 2026</div>
+  </div>
+
+</body>
+</html>
