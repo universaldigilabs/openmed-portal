@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'out',
   server: {
     // Live Vercel Production App
-    url: 'https://openmed-portal.vercel.app',
+    url: 'https://medvantage-kappa.vercel.app',
     androidScheme: 'https',
     cleartext: true,
   },
