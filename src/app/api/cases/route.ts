@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const urgency = searchParams.get('urgency');
+    const country = searchParams.get('country');
+    const specialty = searchParams.get('specialty');
     const search = searchParams.get('search');
 
     if (isSupabaseConfigured()) {
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
         }
 
         const { data, error } = await query;
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           return NextResponse.json({ cases: data, source: 'supabase' });
         }
       } catch (e) {
@@ -51,6 +53,14 @@ export async function GET(request: NextRequest) {
       filtered = filtered.filter((c) => c.urgency_level === urgency);
     }
 
+    if (country && country !== 'all') {
+      filtered = filtered.filter((c) => c.destination_country === country);
+    }
+
+    if (specialty && specialty !== 'all') {
+      filtered = filtered.filter((c) => c.procedure_specialty === specialty);
+    }
+
     if (search) {
       const q = search.toLowerCase();
       filtered = filtered.filter(
@@ -58,7 +68,9 @@ export async function GET(request: NextRequest) {
           c.patient_name.toLowerCase().includes(q) ||
           c.patient_email.toLowerCase().includes(q) ||
           c.case_number.toLowerCase().includes(q) ||
-          c.chief_complaint.toLowerCase().includes(q)
+          c.chief_complaint.toLowerCase().includes(q) ||
+          (c.destination_country && c.destination_country.toLowerCase().includes(q)) ||
+          (c.procedure_specialty && c.procedure_specialty.toLowerCase().includes(q))
       );
     }
 
@@ -83,14 +95,35 @@ export async function POST(request: NextRequest) {
       symptoms_description,
       urgency_level,
       documents,
+      procedure_specialty,
+      destination_country,
+      target_timeline,
+      patient_nationality,
+      need_visa_assistance,
+      need_airport_transfer,
+      need_hotel_booking,
+      need_translator,
+      need_second_opinion,
     } = body;
 
     if (!patient_name || !patient_email || !chief_complaint) {
       return NextResponse.json(
-        { error: 'Patient name, email, and chief complaint are required fields.' },
+        { error: 'Patient name, email, and medical details are required fields.' },
         { status: 400 }
       );
     }
+
+    const travel_preferences = {
+      destination_country: destination_country || 'Any Destination',
+      procedure_specialty: procedure_specialty || 'General Inquiry',
+      target_timeline: target_timeline || 'Flexible',
+      patient_nationality: patient_nationality || 'Not specified',
+      need_visa_assistance: Boolean(need_visa_assistance),
+      need_airport_transfer: Boolean(need_airport_transfer),
+      need_hotel_booking: Boolean(need_hotel_booking),
+      need_translator: Boolean(need_translator),
+      need_second_opinion: Boolean(need_second_opinion),
+    };
 
     if (isSupabaseConfigured()) {
       try {
@@ -114,7 +147,19 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (!error && data) {
-          return NextResponse.json({ success: true, case: data, source: 'supabase' }, { status: 201 });
+          return NextResponse.json(
+            {
+              success: true,
+              case: {
+                ...data,
+                destination_country: destination_country || 'India',
+                procedure_specialty: procedure_specialty || 'General',
+                travel_preferences,
+              },
+              source: 'supabase',
+            },
+            { status: 201 }
+          );
         }
       } catch (e) {
         console.warn('Supabase insert failed, falling back to local test store:', e);
@@ -139,6 +184,11 @@ export async function POST(request: NextRequest) {
       assigned_coordinator: null,
       coordinator_notes: null,
       documents: documents || [],
+      destination_country: destination_country || 'India',
+      procedure_specialty: procedure_specialty || 'General',
+      travel_preferences,
+      quoted_hospital: null,
+      estimated_cost_usd: null,
     };
 
     mockCases.unshift(newCase);
@@ -150,11 +200,11 @@ export async function POST(request: NextRequest) {
       recipient: patient_email,
       channel: 'email',
       event_type: 'case_submitted',
-      subject: `Your medical intake case has been received (${newCase.case_number})`,
-      message_body: `Hello ${patient_name}, your intake form has been submitted with urgency: ${newCase.urgency_level}. A care coordinator is reviewing your record.`,
+      subject: `Med Vantage: Medical Tourism Case Received (${newCase.case_number})`,
+      message_body: `Hello ${patient_name}, your inquiry for ${procedure_specialty || 'treatment'} in ${destination_country || 'abroad'} has been registered. An accredited hospital coordinator is reviewing your record.`,
       status: 'sent',
       error_message: null,
-      metadata: { urgency: newCase.urgency_level, complaint: chief_complaint },
+      metadata: { procedure: procedure_specialty, destination: destination_country },
     });
 
     return NextResponse.json({ success: true, case: newCase, source: 'local-test-mode' }, { status: 201 });

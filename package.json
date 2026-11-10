@@ -11,7 +11,7 @@
     "cap:android": "cap open android",
     "build:android": "next build && cap sync android",
     "build:apk": "next build && cap sync android && cd android && .\\gradlew.bat assembleDebug",
-    "export:apk": "next build && cap sync android && cd android && .\\gradlew.bat assemble && if not exist \"..\\apks\" mkdir \"..\\apks\" && copy /y \"app\\build\\outputs\\apk\\debug\\app-debug.apk\" \"..\\apks\\OpenMed-debug.apk\" && copy /y \"app\\build\\outputs\\apk\\release\\app-release-unsigned.apk\" \"..\\apks\\OpenMed-release-unsigned.apk\""
+    "export:apk": "next build && cap sync android && cd android && .\\gradlew.bat assemble && if not exist \"..\\apks\" mkdir \"..\\apks\" && copy /y \"app\\build\\outputs\\apk\\debug\\app-debug.apk\" \"..\\apks\\OpenMed-debug.apk\" && copy /y \"app\\build\\outputs\\apk\\release\\app-release.apk\" \"..\\apks\\OpenMed-signed-release.apk\""
   },
   "keywords": [],
   "type": "module",

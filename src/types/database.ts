@@ -1,9 +1,12 @@
+import { DestinationCountry, MedicalSpecialty } from './medical-tourism';
+
 export type UrgencyLevel = 'routine' | 'urgent' | 'critical' | 'emergency';
 
 export type CaseStatus = 
   | 'submitted' 
   | 'under_review' 
-  | 'action_required' 
+  | 'quote_prepared'
+  | 'visa_processing'
   | 'scheduled' 
   | 'resolved' 
   | 'closed';
@@ -16,6 +19,21 @@ export interface DocumentAttachment {
   size: number;
   type: string;
   uploaded_at: string;
+}
+
+export interface TravelPreferences {
+  destination_country?: DestinationCountry;
+  procedure_specialty?: MedicalSpecialty;
+  specific_procedure?: string;
+  target_timeline?: string;
+  patient_nationality?: string;
+  need_visa_assistance?: boolean;
+  need_airport_transfer?: boolean;
+  need_hotel_booking?: boolean;
+  need_translator?: boolean;
+  need_second_opinion?: boolean;
+  budget_currency?: string;
+  budget_amount?: string;
 }
 
 export interface MedicalCase {
@@ -35,6 +53,13 @@ export interface MedicalCase {
   assigned_coordinator: string | null;
   coordinator_notes: string | null;
   documents: DocumentAttachment[];
+  
+  // Medical Tourism Fields
+  destination_country?: DestinationCountry | string | null;
+  procedure_specialty?: MedicalSpecialty | string | null;
+  travel_preferences?: TravelPreferences | null;
+  quoted_hospital?: string | null;
+  estimated_cost_usd?: number | null;
 }
 
 export interface NotificationLog {
@@ -43,7 +68,7 @@ export interface NotificationLog {
   case_id: string;
   recipient: string;
   channel: 'email' | 'sms' | 'webhook' | 'system';
-  event_type: 'case_submitted' | 'status_changed' | 'note_added' | 'coordinator_assigned' | 'document_uploaded';
+  event_type: 'case_submitted' | 'status_changed' | 'note_added' | 'coordinator_assigned' | 'document_uploaded' | 'quote_prepared' | 'visa_issued';
   subject: string | null;
   message_body: string;
   status: 'pending' | 'sent' | 'failed';
@@ -60,4 +85,15 @@ export interface IntakeFormData {
   chief_complaint: string;
   symptoms_description: string;
   urgency_level: UrgencyLevel;
+  
+  // Medical Tourism Additions
+  procedure_specialty: MedicalSpecialty | string;
+  destination_country: DestinationCountry | string;
+  target_timeline: string;
+  patient_nationality: string;
+  need_visa_assistance: boolean;
+  need_airport_transfer: boolean;
+  need_hotel_booking: boolean;
+  need_translator: boolean;
+  need_second_opinion: boolean;
 }
