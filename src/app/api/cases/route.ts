@@ -28,6 +28,14 @@ export async function GET(request: NextRequest) {
           query = query.eq('urgency_level', urgency);
         }
 
+        if (country && country !== 'all') {
+          query = query.eq('destination_country', country);
+        }
+
+        if (specialty && specialty !== 'all') {
+          query = query.eq('procedure_specialty', specialty);
+        }
+
         if (search) {
           query = query.or(
             `patient_name.ilike.%${search}%,patient_email.ilike.%${search}%,case_number.ilike.%${search}%,chief_complaint.ilike.%${search}%`
@@ -36,7 +44,16 @@ export async function GET(request: NextRequest) {
 
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
-          return NextResponse.json({ cases: data, source: 'supabase' });
+          let results = data;
+          if (assistance) {
+            results = results.filter((c: MedicalCase) => {
+              if (assistance === 'hotel') return c.travel_preferences?.need_hotel_booking;
+              if (assistance === 'visa') return c.travel_preferences?.need_visa_assistance;
+              if (assistance === 'insurance') return c.travel_preferences?.need_insurance_assistance;
+              return true;
+            });
+          }
+          return NextResponse.json({ cases: results, source: 'supabase' });
         }
       } catch (e) {
         console.warn('Falling back to local mock store due to Supabase error:', e);
@@ -181,6 +198,9 @@ export async function POST(request: NextRequest) {
               urgency_level: urgency_level || 'routine',
               status: 'submitted',
               documents: documents || [],
+              destination_country: destination_country || 'India',
+              procedure_specialty: procedure_specialty || 'General',
+              travel_preferences,
             },
           ])
           .select()

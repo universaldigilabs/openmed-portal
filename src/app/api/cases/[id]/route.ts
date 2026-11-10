@@ -83,6 +83,8 @@ export async function PATCH(
           if (urgency_level !== undefined) updates.urgency_level = urgency_level;
           if (assigned_coordinator !== undefined) updates.assigned_coordinator = assigned_coordinator;
           if (coordinator_notes !== undefined) updates.coordinator_notes = coordinator_notes;
+          if (quoted_hospital !== undefined) updates.quoted_hospital = quoted_hospital;
+          if (estimated_cost_usd !== undefined) updates.estimated_cost_usd = estimated_cost_usd;
 
           const { data: updatedCase, error: updateErr } = await supabaseAdmin
             .from('medical_cases')
