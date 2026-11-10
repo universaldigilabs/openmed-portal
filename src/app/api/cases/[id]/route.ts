@@ -65,6 +65,8 @@ export async function PATCH(
       urgency_level,
       assigned_coordinator,
       coordinator_notes,
+      quoted_hospital,
+      estimated_cost_usd,
     } = body;
 
     if (isSupabaseConfigured()) {
@@ -97,14 +99,22 @@ export async function PATCH(
                   recipient: existingCase.patient_email,
                   channel: 'email',
                   event_type: 'status_changed',
-                  subject: `Medical Case Update: Status changed to ${status}`,
-                  message_body: `Hello ${existingCase.patient_name}, the status of your case (${existingCase.case_number}) has been updated from '${existingCase.status}' to '${status}'.`,
+                  subject: `Med Vantage Update: Status changed to ${status}`,
+                  message_body: `Hello ${existingCase.patient_name}, the status of your medical tourism inquiry (${existingCase.case_number}) has been updated to '${status}'.`,
                   status: 'sent',
                   metadata: { previous_status: existingCase.status, new_status: status },
                 },
               ]);
             }
-            return NextResponse.json({ success: true, case: updatedCase, source: 'supabase' });
+            return NextResponse.json({
+              success: true,
+              case: {
+                ...updatedCase,
+                quoted_hospital,
+                estimated_cost_usd,
+              },
+              source: 'supabase',
+            });
           }
         }
       } catch (e) {
@@ -125,6 +135,8 @@ export async function PATCH(
     if (urgency_level !== undefined) prev.urgency_level = urgency_level;
     if (assigned_coordinator !== undefined) prev.assigned_coordinator = assigned_coordinator;
     if (coordinator_notes !== undefined) prev.coordinator_notes = coordinator_notes;
+    if (quoted_hospital !== undefined) prev.quoted_hospital = quoted_hospital;
+    if (estimated_cost_usd !== undefined) prev.estimated_cost_usd = estimated_cost_usd;
     prev.updated_at = new Date().toISOString();
 
     if (status && status !== prevStatus) {
@@ -135,8 +147,8 @@ export async function PATCH(
         recipient: prev.patient_email,
         channel: 'email',
         event_type: 'status_changed',
-        subject: `Medical Case Update: Status changed to ${status}`,
-        message_body: `Hello ${prev.patient_name}, the status of your case (${prev.case_number}) has been updated from '${prevStatus}' to '${status}'.`,
+        subject: `Med Vantage Update: Status changed to ${status}`,
+        message_body: `Hello ${prev.patient_name}, your medical tourism case (${prev.case_number}) has been updated from '${prevStatus}' to '${status}'.`,
         status: 'sent',
         error_message: null,
         metadata: { previous_status: prevStatus, new_status: status },
