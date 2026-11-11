@@ -56,8 +56,12 @@ dependencies {
 }
 
 apply from: 'capacitor.build.gradle'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+    apply plugin: 'com.google.firebase.crashlytics'
+} else {
+    logger.info("google-services.json not found, google-services plugin not applied.")
+}
 
 try {
     def servicesJSON = file('google-services.json')
