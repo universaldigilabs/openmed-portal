@@ -1,12 +1,21 @@
-import type { Metadata } from 'next';
-import { ShieldCheck, Globe2 } from 'lucide-react';
+import type { Metadata, Viewport } from 'next';
+import { ShieldCheck } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
+
+export const viewport: Viewport = {
+  themeColor: '#2563eb',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'Med Vantage - Global Medical Tourism & Accredited Healthcare Facilitation',
   description: 'Connect with JCI and NABH accredited hospitals worldwide. Transparent surgical cost comparisons, virtual second opinions, and end-to-end medical visa and travel coordination.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -16,13 +25,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased font-sans">
+      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased font-sans pb-16 md:pb-0">
         <AuthProvider>
           {/* Main Global Navigation */}
           <Navbar />
 
           {/* Main Content */}
           <main className="flex-1">{children}</main>
+
+          {/* Mobile App Bottom Tab Navigation */}
+          <MobileBottomNav />
 
           {/* Footer */}
           <footer className="border-t border-slate-200 bg-white py-8 text-xs text-slate-500">

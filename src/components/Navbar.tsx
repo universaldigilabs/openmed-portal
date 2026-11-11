@@ -19,6 +19,7 @@ import {
   X,
   Sparkles,
   UploadCloud,
+  SearchCheck,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -33,6 +34,7 @@ export default function Navbar() {
     { href: '/cost-comparison', label: 'Cost Transparency', icon: TrendingDown },
     { href: '/second-opinion', label: 'Second Opinions', icon: Video },
     { href: '/travel-services', label: 'Travel & Visa', icon: Plane },
+    { href: '/track', label: 'Track Case', icon: SearchCheck },
   ];
 
   return (

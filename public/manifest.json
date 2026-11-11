@@ -1,0 +1,10 @@
+{
+  "name": "Med Vantage — Global Medical Tourism",
+  "short_name": "Med Vantage",
+  "description": "Connect with JCI & NABH accredited hospitals globally. Compare costs, get second opinions, and coordinate medical visas, hotels, and insurance.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary"
+}
